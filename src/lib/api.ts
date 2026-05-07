@@ -16,16 +16,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export const tokenStorage = {
   getAccess: () =>
-    typeof window !== "undefined"
-      ? localStorage.getItem("accessToken")
-      : null,
+    typeof window !== "undefined" ? localStorage.getItem("accessToken") : null,
   setAccess: (token: string) =>
-    typeof window !== "undefined" &&
-    localStorage.setItem("accessToken", token),
+    typeof window !== "undefined" && localStorage.setItem("accessToken", token),
   getRefresh: () =>
-    typeof window !== "undefined"
-      ? localStorage.getItem("refreshToken")
-      : null,
+    typeof window !== "undefined" ? localStorage.getItem("refreshToken") : null,
   setRefresh: (token: string) =>
     typeof window !== "undefined" &&
     localStorage.setItem("refreshToken", token),
@@ -42,7 +37,7 @@ export const tokenStorage = {
 async function apiFetch<T>(
   endpoint: string,
   options: RequestInit = {},
-  withAuth = true
+  withAuth = true,
 ): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -92,21 +87,28 @@ async function apiFetch<T>(
 export const auth = {
   /** POST /auth/register */
   register: (payload: RegisterPayload) =>
-    apiFetch<AuthResponse>("/auth/register", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    }, false),
+    apiFetch<AuthResponse>(
+      "/auth/register",
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      },
+      false,
+    ),
 
   /** POST /auth/login */
   login: (payload: LoginPayload) =>
-    apiFetch<AuthResponse>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    }, false),
+    apiFetch<AuthResponse>(
+      "/auth/login",
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      },
+      false,
+    ),
 
   /** GET /auth/me */
-  getMe: () =>
-    apiFetch<{ success: boolean; user: User }>("/auth/me"),
+  getMe: () => apiFetch<{ success: boolean; data: { user: User } }>("/auth/me"),
 
   /** POST /auth/logout */
   logout: () =>
@@ -127,10 +129,12 @@ async function refreshTokens(): Promise<boolean> {
     if (!res.ok) return false;
 
     const data: AuthResponse = await res.json();
-    if (data.accessToken) {
-      tokenStorage.setAccess(data.accessToken);
+
+    if (data.data?.accessToken) {
+      tokenStorage.setAccess(data.data.accessToken);
       return true;
     }
+
     return false;
   } catch {
     return false;
@@ -141,8 +145,7 @@ async function refreshTokens(): Promise<boolean> {
 
 export const users = {
   /** GET /users (admin only) */
-  getAll: () =>
-    apiFetch<{ success: boolean; users: User[] }>("/users"),
+  getAll: () => apiFetch<{ success: boolean; users: User[] }>("/users"),
 
   /** GET /users/stats (admin only) */
   getStats: () =>
@@ -150,7 +153,7 @@ export const users = {
 
   /** GET /users/:id (owner or admin) */
   getById: (id: string) =>
-    apiFetch<{ success: boolean; user: User }>(`/users/${id}`),
+    apiFetch<{ success: boolean; data: { user: User } }>(`/users/${id}`),
 
   /** PUT /users/:id (owner or admin) */
   update: (id: string, payload: UpdateUserPayload) =>

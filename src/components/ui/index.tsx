@@ -23,8 +23,10 @@ export function Button({
     "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variants = {
-    primary: "bg-violet-600 text-white hover:bg-violet-700 focus:ring-violet-500",
-    secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-400",
+    primary:
+      "bg-violet-600 text-white hover:bg-violet-700 focus:ring-violet-500",
+    secondary:
+      "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-400",
     danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
     ghost: "bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-400",
   };
@@ -42,9 +44,24 @@ export function Button({
       {...props}
     >
       {loading && (
-        <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        <svg
+          className="animate-spin -ml-1 mr-2 h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          />
         </svg>
       )}
       {children}
@@ -60,12 +77,22 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   hint?: string;
 }
 
-export function Input({ label, error, hint, className = "", id, ...props }: InputProps) {
+export function Input({
+  label,
+  error,
+  hint,
+  className = "",
+  id,
+  ...props
+}: InputProps) {
   const inputId = id || label?.toLowerCase().replace(/\s+/g, "-");
   return (
     <div className="space-y-1">
       {label && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor={inputId}
+          className="block text-sm font-medium text-gray-700"
+        >
           {label}
         </label>
       )}
@@ -98,7 +125,9 @@ export function Badge({ children, variant = "default" }: BadgeProps) {
     info: "bg-violet-100 text-violet-700",
   };
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variants[variant]}`}>
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variants[variant]}`}
+    >
       {children}
     </span>
   );
@@ -106,9 +135,17 @@ export function Badge({ children, variant = "default" }: BadgeProps) {
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
-export function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+export function Card({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={`bg-white rounded-xl border border-gray-200 shadow-sm ${className}`}>
+    <div
+      className={`bg-white rounded-xl border border-gray-200 shadow-sm ${className}`}
+    >
       {children}
     </div>
   );
@@ -134,8 +171,13 @@ export function Alert({ type, message }: AlertProps) {
     info: "ℹ",
     warning: "⚠",
   };
+
+  if (!message) return null;
+
   return (
-    <div className={`flex items-start gap-2 p-3 rounded-lg border text-sm ${styles[type]}`}>
+    <div
+      className={`flex items-start gap-2 p-3 rounded-lg border text-sm ${styles[type]}`}
+    >
       <span className="font-bold">{icons[type]}</span>
       <span>{message}</span>
     </div>
@@ -170,9 +212,24 @@ export function StatusBadge({ isActive }: { isActive: boolean }) {
 
 export function Spinner({ className = "" }: { className?: string }) {
   return (
-    <svg className={`animate-spin h-5 w-5 text-violet-600 ${className}`} fill="none" viewBox="0 0 24 24">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+    <svg
+      className={`animate-spin h-5 w-5 text-violet-600 ${className}`}
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+      />
     </svg>
   );
 }

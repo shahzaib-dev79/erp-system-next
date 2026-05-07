@@ -4,19 +4,33 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { Alert, Button, Input } from "@/components/ui";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const { login } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setError("");
+    setSuccess("");
     setLoading(true);
+
     try {
       await login(form);
+
+      setSuccess("Logged in successfully.");
+
+      const redirect = searchParams.get("redirect") || "/dashboard";
+
+      router.replace(redirect);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
@@ -30,8 +44,18 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-violet-600 mb-4">
-            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            <svg
+              className="w-7 h-7 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
@@ -41,13 +65,16 @@ export default function LoginPage() {
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 space-y-5">
           {error && <Alert type="error" message={error} />}
+          {success && <Alert type="success" message={success} />}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Email address"
               type="email"
               value={form.email}
-              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, email: e.target.value }))
+              }
               placeholder="you@example.com"
               required
               autoComplete="email"
@@ -56,19 +83,29 @@ export default function LoginPage() {
               label="Password"
               type="password"
               value={form.password}
-              onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, password: e.target.value }))
+              }
               placeholder="••••••••"
               required
               autoComplete="current-password"
             />
-            <Button type="submit" loading={loading} className="w-full" size="lg">
+            <Button
+              type="submit"
+              loading={loading}
+              className="w-full"
+              size="lg"
+            >
               Sign in
             </Button>
           </form>
 
           <p className="text-center text-sm text-gray-500">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-violet-600 font-medium hover:text-violet-700">
+            Don't have an account?{" "}
+            <Link
+              href="/register"
+              className="text-violet-600 font-medium hover:text-violet-700"
+            >
               Create one
             </Link>
           </p>

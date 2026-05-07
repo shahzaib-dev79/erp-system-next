@@ -11,6 +11,7 @@ export default function AppNav() {
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard" },
+    { href: "/dashboard/assets", label: "Assets" },
     ...(user?.role === "admin" ? [{ href: "/admin", label: "Admin" }] : []),
     { href: `/dashboard/profile`, label: "Profile" },
   ];
@@ -19,7 +20,10 @@ export default function AppNav() {
     <nav className="bg-white border-b border-gray-200 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto flex items-center justify-between h-14">
         {/* Logo */}
-        <Link href="/dashboard" className="font-bold text-violet-700 text-lg tracking-tight">
+        <Link
+          href="/dashboard"
+          className="font-bold text-violet-700 text-lg tracking-tight"
+        >
           AuthApp
         </Link>
 
