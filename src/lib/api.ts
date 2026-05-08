@@ -14,20 +14,48 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 // ─── Token Management ─────────────────────────────────────────────────────────
 
+// export const tokenStorage = {
+//   getAccess: () =>
+//     typeof window !== "undefined" ? localStorage.getItem("accessToken") : null,
+//   setAccess: (token: string) =>
+//     typeof window !== "undefined" && localStorage.setItem("accessToken", token),
+//   getRefresh: () =>
+//     typeof window !== "undefined" ? localStorage.getItem("refreshToken") : null,
+//   setRefresh: (token: string) =>
+//     typeof window !== "undefined" &&
+//     localStorage.setItem("refreshToken", token),
+//   clear: () => {
+//     if (typeof window !== "undefined") {
+//       localStorage.removeItem("accessToken");
+//       localStorage.removeItem("refreshToken");
+//     }
+//   },
+// };
+
 export const tokenStorage = {
   getAccess: () =>
     typeof window !== "undefined" ? localStorage.getItem("accessToken") : null,
-  setAccess: (token: string) =>
-    typeof window !== "undefined" && localStorage.setItem("accessToken", token),
+  setAccess: (token: string) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("accessToken", token);
+      // Cookie bhi set karo taake middleware check kar sake
+      document.cookie = `accessToken=${token}; path=/; max-age=900`;
+    }
+  },
   getRefresh: () =>
     typeof window !== "undefined" ? localStorage.getItem("refreshToken") : null,
-  setRefresh: (token: string) =>
-    typeof window !== "undefined" &&
-    localStorage.setItem("refreshToken", token),
+  setRefresh: (token: string) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("refreshToken", token);
+    }
+  },
   clear: () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
+      // Cookie bhi clear karo
+      document.cookie = "accessToken=; path=/; max-age=0";
+      document.cookie = "userRole=; path=/; max-age=0";
     }
   },
 };

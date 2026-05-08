@@ -88,6 +88,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     tokenStorage.setAccess(res.data.accessToken);
     tokenStorage.setRefresh(res.data.refreshToken!);
+    document.cookie = `userRole=${res.data.user.role}; path=/; max-age=900`;
+
     setState({
       user: res.data.user,
       accessToken: res.data.accessToken,
