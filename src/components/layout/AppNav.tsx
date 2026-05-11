@@ -12,6 +12,7 @@ export default function AppNav() {
   const navItems = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/dashboard/assets", label: "Assets" },
+    { href: "/dashboard/accounts", label: "Accounts" },
     ...(user?.role === "admin" ? [{ href: "/admin", label: "Admin" }] : []),
     { href: `/dashboard/profile`, label: "Profile" },
   ];
