@@ -8,21 +8,31 @@ import { users } from "@/lib/api";
 import { User } from "@/types";
 
 export default function DashboardPage() {
-  const { isLoading } = useRequireAuth();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const [profile, setProfile] = useState<User | null>(null);
   const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
     if (!user) return;
+
     users
       .getById(user._id)
-      .then((res) => setProfile(res.user))
+      .then((res) => setProfile(res.data?.user ?? null))
       .catch(console.error)
       .finally(() => setFetching(false));
   }, [user]);
 
-  if (isLoading || fetching) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+  if (!user) {
+    return null;
+  }
+  if (fetching) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Spinner />
@@ -42,13 +52,15 @@ export default function DashboardPage() {
             Welcome, {u?.name}!
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Here&apos;s your account overview.
+            Here's your account overview.
           </p>
         </div>
 
         {/* Profile Card */}
         <Card className="p-6">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">Profile</h2>
+          <h2 className="text-base font-semibold text-gray-900 mb-4">
+            Profile
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Name" value={u?.name} />
             <Field label="Email" value={u?.email} />
@@ -62,22 +74,36 @@ export default function DashboardPage() {
             </div>
             <Field
               label="Member since"
-              value={u?.createdAt ? new Date(u.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "—"}
+              value={
+                u?.createdAt
+                  ? new Date(u.createdAt).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : "—"
+              }
             />
             <Field
               label="Last updated"
-              value={u?.updatedAt ? new Date(u.updatedAt).toLocaleDateString() : "—"}
+              value={
+                u?.updatedAt ? new Date(u.updatedAt).toLocaleDateString() : "—"
+              }
             />
           </div>
         </Card>
 
         {/* Permissions */}
         <Card className="p-6">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">Permissions</h2>
+          <h2 className="text-base font-semibold text-gray-900 mb-4">
+            Permissions
+          </h2>
           <div className="space-y-2">
             {getPermissions(u?.role).map((perm) => (
               <div key={perm.label} className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${perm.granted ? "bg-green-500" : "bg-gray-300"}`} />
+                <span
+                  className={`w-2 h-2 rounded-full ${perm.granted ? "bg-green-500" : "bg-gray-300"}`}
+                />
                 <span className="text-sm text-gray-700">{perm.label}</span>
                 {!perm.granted && (
                   <Badge variant="default">
@@ -108,10 +134,18 @@ function getPermissions(role?: string) {
     { label: "Update own profile", granted: true, requires: "" },
     { label: "Change own password", granted: true, requires: "" },
     { label: "View all users", granted: role === "admin", requires: "admin" },
-    { label: "Update user roles", granted: role === "admin", requires: "admin" },
+    {
+      label: "Update user roles",
+      granted: role === "admin",
+      requires: "admin",
+    },
     { label: "Deactivate users", granted: role === "admin", requires: "admin" },
     { label: "Delete users", granted: role === "admin", requires: "admin" },
     { label: "View user stats", granted: role === "admin", requires: "admin" },
-    { label: "Moderate content", granted: role === "admin" || role === "moderator", requires: "moderator" },
+    {
+      label: "Moderate content",
+      granted: role === "admin" || role === "moderator",
+      requires: "moderator",
+    },
   ];
 }

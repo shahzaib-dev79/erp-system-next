@@ -64,8 +64,11 @@ export interface ApiResponse<T = unknown> {
 }
 
 export interface AuthResponse extends ApiResponse {
-  user?: User;
-  accessToken?: string;
+  data?: {
+    user: User;
+    accessToken: string;
+    refreshToken: string;
+  };
 }
 
 export interface UserStatsResponse {

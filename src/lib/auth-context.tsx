@@ -32,69 +32,91 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = useCallback(async () => {
     try {
       const token = tokenStorage.getAccess();
+      console.log("token found:", token);
       if (!token) {
-        setState((s) => ({ ...s, isLoading: false }));
+        setState({
+          user: null,
+          accessToken: null,
+          isLoading: false,
+          isAuthenticated: false,
+        });
         return;
       }
       const res = await auth.getMe();
+      console.log("getMe response:", res);
       setState({
-        user: res.user,
+        user: res.data?.user ?? null,
         accessToken: token,
         isLoading: false,
         isAuthenticated: true,
       });
-    } catch {
+    } catch (error) {
+      console.log("refreshUser error:", error);
       tokenStorage.clear();
-      setState({ user: null, accessToken: null, isLoading: false, isAuthenticated: false });
+      setState({
+        user: null,
+        accessToken: null,
+        isLoading: false,
+        isAuthenticated: false,
+      });
     }
   }, []);
 
   useEffect(() => {
-    refreshUser();
+    void refreshUser();
   }, [refreshUser]);
 
   const login = async (payload: LoginPayload) => {
     const res = await auth.login(payload);
-    if (!res.success || !res.accessToken || !res.user) {
+    if (!res.success || !res.data?.accessToken || !res.data?.user) {
       throw new Error(res.message || "Login failed");
     }
-    tokenStorage.setAccess(res.accessToken);
+    tokenStorage.setAccess(res.data.accessToken);
+    tokenStorage.setRefresh(res.data.refreshToken!);
     setState({
-      user: res.user,
-      accessToken: res.accessToken,
+      user: res.data.user,
+      accessToken: res.data.accessToken,
       isLoading: false,
       isAuthenticated: true,
     });
-    router.push(res.user.role === "admin" ? "/admin" : "/dashboard");
   };
 
   const register = async (payload: RegisterPayload) => {
     const res = await auth.register(payload);
-    if (!res.success || !res.accessToken || !res.user) {
+    if (!res.success || !res.data?.accessToken || !res.data?.user) {
       throw new Error(res.message || "Registration failed");
     }
-    tokenStorage.setAccess(res.accessToken);
+    tokenStorage.setAccess(res.data.accessToken);
+    tokenStorage.setRefresh(res.data.refreshToken!);
+    document.cookie = `userRole=${res.data.user.role}; path=/; max-age=900`;
+
     setState({
-      user: res.user,
-      accessToken: res.accessToken,
+      user: res.data.user,
+      accessToken: res.data.accessToken,
       isLoading: false,
       isAuthenticated: true,
     });
     router.push("/dashboard");
   };
-
   const logout = async () => {
     try {
       await auth.logout();
     } finally {
       tokenStorage.clear();
-      setState({ user: null, accessToken: null, isLoading: false, isAuthenticated: false });
+      setState({
+        user: null,
+        accessToken: null,
+        isLoading: false,
+        isAuthenticated: false,
+      });
       router.push("/login");
     }
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout, refreshUser }}>
+    <AuthContext.Provider
+      value={{ ...state, login, register, logout, refreshUser }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -109,14 +131,22 @@ export function useAuth() {
 // ─── Role Guards ──────────────────────────────────────────────────────────────
 
 export function useRequireAuth(redirectTo = "/login") {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, accessToken } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) router.replace(redirectTo);
-  }, [isAuthenticated, isLoading, router, redirectTo]);
+    if (isLoading) return;
 
-  return { isAuthenticated, isLoading };
+    // sirf tab redirect karo jab token bhi na ho
+    if (!accessToken) {
+      router.replace(`${redirectTo}?redirect=/dashboard`);
+    }
+  }, [accessToken, isLoading, router, redirectTo]);
+
+  return {
+    isAuthenticated: !!accessToken,
+    isLoading,
+  };
 }
 
 export function useRequireRole(role: "admin" | "moderator") {
