@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-
 import AppNav from "@/components/layout/AppNav";
 import AccountForm from "@/components/accounts/AccountForm";
 import { Alert, Spinner } from "@/components/ui";
