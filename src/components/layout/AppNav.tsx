@@ -13,6 +13,7 @@ export default function AppNav() {
     { href: "/dashboard", label: "Dashboard" },
     { href: "/dashboard/assets", label: "Assets" },
     { href: "/dashboard/accounts", label: "Accounts" },
+    { href: "/dashboard/parties", label: "Parties" },
     ...(user?.role === "admin" ? [{ href: "/admin", label: "Admin" }] : []),
     { href: `/dashboard/profile`, label: "Profile" },
   ];
