@@ -5,7 +5,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 const getToken = () => localStorage.getItem("accessToken");
 
 export const getAllParties = async (): Promise<Party[]> => {
-  const res = await fetch(`${BASE_URL}/accounting/parties`, {
+  const res = await fetch(`${BASE_URL}/accounting/party`, {
     headers: {
       Authorization: `Bearer ${getToken()}`,
     },
@@ -16,7 +16,7 @@ export const getAllParties = async (): Promise<Party[]> => {
 };
 
 export const getPartyById = async (id: string): Promise<Party> => {
-  const res = await fetch(`${BASE_URL}/accounting/parties/${id}`, {
+  const res = await fetch(`${BASE_URL}/accounting/party/${id}`, {
     headers: {
       Authorization: `Bearer ${getToken()}`,
     },
@@ -29,7 +29,7 @@ export const getPartyById = async (id: string): Promise<Party> => {
 export const createParty = async (
   payload: CreatePartyPayload,
 ): Promise<Party> => {
-  const res = await fetch(`${BASE_URL}/accounting/parties`, {
+  const res = await fetch(`${BASE_URL}/accounting/party`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -46,8 +46,8 @@ export const updateParty = async (
   id: string,
   payload: UpdatePartyPayload,
 ): Promise<Party> => {
-  const res = await fetch(`${BASE_URL}/accounting/parties/${id}`, {
-    method: "PUT",
+  const res = await fetch(`${BASE_URL}/accounting/party/${id}`, {
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${getToken()}`,
@@ -60,7 +60,7 @@ export const updateParty = async (
 };
 
 export const deleteParty = async (id: string): Promise<void> => {
-  const res = await fetch(`${BASE_URL}/accounting/parties/${id}`, {
+  const res = await fetch(`${BASE_URL}/accounting/party/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${getToken()}`,
