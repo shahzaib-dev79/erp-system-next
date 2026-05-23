@@ -47,7 +47,7 @@ export const updateParty = async (
   payload: UpdatePartyPayload,
 ): Promise<Party> => {
   const res = await fetch(`${BASE_URL}/accounting/party/${id}`, {
-    method: "PATCH",
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${getToken()}`,
