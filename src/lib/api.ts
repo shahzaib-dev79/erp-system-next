@@ -67,6 +67,7 @@ async function apiFetch<T>(
   options: RequestInit = {},
   withAuth = true,
 ): Promise<T> {
+  console.log("👉 API CALL:", endpoint);
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),
