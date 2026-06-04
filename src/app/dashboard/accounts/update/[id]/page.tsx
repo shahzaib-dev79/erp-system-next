@@ -66,6 +66,7 @@ export default function UpdateAccountPage() {
           <AccountForm
             initialData={account}
             isEdit={true}
+            accountId={id}
             onSubmitSuccess={() => {
               router.push("/dashboard/accounts");
             }}

@@ -6,8 +6,6 @@ import { Alert, Spinner } from "@/components/ui";
 import LedgerTable from "@/components/ledger/LedgerTable";
 import { useRequireAuth } from "@/lib/auth-context";
 import { getAllLedgers, deleteLedger } from "@/services/ledger.service";
-import { getAllAccounts } from "@/services/account.service";
-import { getAllParties } from "@/services/party.services";
 import { useRouter } from "next/navigation";
 import { Ledger } from "@/types/ledger";
 import { PlusIcon } from "lucide-react";
@@ -21,14 +19,17 @@ export default function LedgerPage() {
 	const [error, setError] = useState("");
 	const [success, setSuccess] = useState("");
 
-	// auto clear success
+	// Auto-clear feedback messages (both success and error)
 	useEffect(() => {
-		if (!success) return;
-		const timer = setTimeout(() => setSuccess(""), 2000);
+		if (!success && !error) return;
+		const timer = setTimeout(() => {
+			setSuccess("");
+			setError("");
+		}, 3000);
 		return () => clearTimeout(timer);
-	}, [success]);
+	}, [success, error]);
 
-	// fetch ledgers
+	// Fetch ledgers
 	const fetchLedgers = useCallback(async () => {
 		try {
 			setFetching(true);
@@ -43,8 +44,10 @@ export default function LedgerPage() {
 	}, []);
 
 	useEffect(() => {
-		fetchLedgers();
-	}, [fetchLedgers]);
+		if (!isLoading) {
+			fetchLedgers();
+		}
+	}, [fetchLedgers, isLoading]);
 
 	const handleDelete = async (id: string) => {
 		const ok = confirm("Delete this ledger?");
@@ -63,14 +66,18 @@ export default function LedgerPage() {
 		router.push(`/dashboard/ledger/update/${ledger._id}`);
 	};
 
-	if (isLoading || fetching) {
+	// FIX: Only block the whole page layout for Authentication loading
+	if (isLoading) {
 		return (
 			<div className="min-h-screen flex items-center justify-center">
 				<Spinner />
 			</div>
 		);
 	}
-	const SalesLedgers = ledgers.filter((entry) => entry.type === "sale");
+
+	// FIX: Corrected implicit return wrapper for filter mapping
+	const purchaseLedgers = ledgers.filter((entry) => entry.type === "purchase");
+
 	return (
 		<div className="min-h-screen bg-gray-50">
 			<AppNav />
@@ -80,21 +87,28 @@ export default function LedgerPage() {
 					<h1 className="text-2xl font-bold">Journal Ledger</h1>
 
 					<button
-						onClick={() => router.push("/dashboard/sales/create")}
-						className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded-lg">
+						onClick={() => router.push("/dashboard/purchase/create")}
+						className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors">
 						<PlusIcon className="w-4 h-4" />
-						Add Sales
+						Add Ledger
 					</button>
 				</div>
 
 				{error && <Alert type="error" message={error} />}
 				{success && <Alert type="success" message={success} />}
 
-				<LedgerTable
-					ledgers={SalesLedgers}
-					onEdit={handleEdit}
-					onDelete={handleDelete}
-				/>
+				{/* Better UX: Show internal loading indicator instead of destroying layout */}
+				{fetching && ledgers.length === 0 ? (
+					<div className="flex justify-center py-12">
+						<Spinner />
+					</div>
+				) : (
+					<LedgerTable
+						ledgers={purchaseLedgers}
+						onEdit={handleEdit}
+						onDelete={handleDelete}
+					/>
+				)}
 			</main>
 		</div>
 	);

@@ -35,7 +35,7 @@ export default function LedgerForm({
 		party: initialData?.party?._id || "",
 		debit: initialData?.debit?.toString() || "",
 		credit: initialData?.credit?.toString() || "",
-		type: fixedType || initialData?.type || "sale",
+		type: "sale",
 		description: initialData?.description || "",
 	});
 
@@ -124,25 +124,6 @@ export default function LedgerForm({
 				placeholder="Credit"
 				className="w-full border p-2 rounded"
 			/>
-
-			{fixedType ? (
-				<input
-					value={fixedTypeLabel}
-					className="w-full border p-2 rounded bg-gray-50 text-gray-600"
-					readOnly
-				/>
-			) : (
-				<select
-					name="type"
-					value={form.type}
-					onChange={handleChange}
-					className="w-full border p-2 rounded">
-					<option value="sale">Sale</option>
-					<option value="purchase">Purchase</option>
-					<option value="expense">Expense</option>
-					<option value="salary">Salary</option>
-				</select>
-			)}
 
 			<input
 				name="description"

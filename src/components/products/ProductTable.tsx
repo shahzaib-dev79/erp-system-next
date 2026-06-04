@@ -1,5 +1,7 @@
 "use client";
 
+import { Card } from "@/components/ui";
+import { PencilIcon, TrashIcon } from "lucide-react";
 import { Product } from "@/types/product";
 
 interface Props {
@@ -10,53 +12,61 @@ interface Props {
 
 export default function ProductTable({ products, onEdit, onDelete }: Props) {
   return (
-    <div className="bg-white rounded-xl shadow overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="bg-gray-100 text-left">
-          <tr>
-            <th className="p-3">Name</th>
-            <th className="p-3">Price</th>
-            <th className="p-3">Quantity</th>
-            <th className="p-3">Seller Group</th>
-            <th className="p-3">Description</th>
-            <th className="p-3 text-right">Actions</th>
-          </tr>
-        </thead>
+    <Card>
+      <div className="border-b border-gray-100 p-4">
+        <h2 className="font-semibold text-gray-900">All Products ({products.length})</h2>
+      </div>
 
-        <tbody>
-          {products.length === 0 ? (
-            <tr>
-              <td colSpan={6} className="p-4 text-center text-gray-500">
-                No products found
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-100 text-left">
+              <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">Price</th>
+              <th className="px-4 py-3">Quantity</th>
+              <th className="px-4 py-3">Seller Group</th>
+              <th className="px-4 py-3">Description</th>
+              <th className="px-4 py-3 text-center">Actions</th>
             </tr>
-          ) : (
-            products.map((product) => (
-              <tr key={product._id} className="border-t">
-                <td className="p-3">{product.name}</td>
-                <td className="p-3">{product.price}</td>
-                <td className="p-3">{product.quantity}</td>
-                <td className="p-3">{product.sellerGroup?.name || "-"}</td>
-                <td className="p-3">{product.description}</td>
-                <td className="p-3 text-right space-x-2">
-                  <button
-                    onClick={() => onEdit(product)}
-                    className="px-3 py-1 bg-blue-500 text-white rounded"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => onDelete(product._id)}
-                    className="px-3 py-1 bg-red-500 text-white rounded"
-                  >
-                    Delete
-                  </button>
+          </thead>
+
+          <tbody className="divide-y divide-gray-100">
+            {products.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
+                  No products found.
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+            ) : (
+              products.map((product) => (
+                <tr key={product._id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 font-medium text-gray-900">{product.name}</td>
+                  <td className="px-4 py-3">{product.price}</td>
+                  <td className="px-4 py-3">{product.quantity}</td>
+                  <td className="px-4 py-3">{product.sellerGroup?.name || "-"}</td>
+                  <td className="px-4 py-3 text-gray-600">{product.description}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => onEdit(product)}
+                        className="rounded-md bg-violet-50 p-1.5 text-violet-600"
+                      >
+                        <PencilIcon className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(product._id)}
+                        className="rounded-md bg-red-50 p-1.5 text-red-600"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </Card>
   );
 }

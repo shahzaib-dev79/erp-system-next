@@ -15,7 +15,7 @@ export default function AppNav() {
 		{ href: "/dashboard/accounts", label: "Accounts" },
 		{ href: "/dashboard/parties", label: "Parties" },
 		{ href: "/dashboard/sales", label: "Sales" },
-		{ href: "/dashboard/purchases", label: "Purchases" },
+		{ href: "/dashboard/purchase", label: "Purchases" },
 		{ href: "/dashboard/ledger", label: "Ledger" },
 		{ href: "/dashboard/products", label: "Products" },
 		...(user?.role === "admin" ? [{ href: "/admin", label: "Admin" }] : []),

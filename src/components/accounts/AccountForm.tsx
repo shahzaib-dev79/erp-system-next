@@ -3,18 +3,23 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui";
-import { createAccount } from "@/services/account.service";
+import {
+  createAccount,
+  updateAccount,
+} from "@/services/account.service";
 import { CreateAccountPayload } from "@/types/account";
 
 interface Props {
   initialData?: CreateAccountPayload;
   isEdit?: boolean;
+  accountId?: string;
   onSubmitSuccess?: () => void;
 }
 
 export default function AccountForm({
   initialData,
   isEdit = false,
+  accountId,
   onSubmitSuccess,
 }: Props) {
   const router = useRouter();
@@ -36,7 +41,11 @@ export default function AccountForm({
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const value = e.target.name === "balance"
+      ? Number(e.target.value)
+      : e.target.value;
+
+    setForm({ ...form, [e.target.name]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,10 +55,21 @@ export default function AccountForm({
       setLoading(true);
       setError("");
 
-      await createAccount({
-        ...form,
-        balance: Number(form.balance),
-      });
+      if (isEdit) {
+        if (!accountId) {
+          throw new Error("Missing account id for update");
+        }
+
+        await updateAccount(accountId, {
+          ...form,
+          balance: Number(form.balance),
+        });
+      } else {
+        await createAccount({
+          ...form,
+          balance: Number(form.balance),
+        });
+      }
 
       setSuccess(
         isEdit
