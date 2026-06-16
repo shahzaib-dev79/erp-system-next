@@ -19,7 +19,6 @@ export default function LedgerPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Auto-clear feedback messages (both success and error)
   useEffect(() => {
     if (!success && !error) return;
     const timer = setTimeout(() => {
@@ -29,7 +28,6 @@ export default function LedgerPage() {
     return () => clearTimeout(timer);
   }, [success, error]);
 
-  // Fetch ledgers
   const fetchLedgers = useCallback(async () => {
     try {
       setFetching(true);
@@ -66,7 +64,6 @@ export default function LedgerPage() {
     router.push(`/dashboard/ledger/update/${ledger._id}`);
   };
 
-  // FIX: Only block the whole page layout for Authentication loading
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -75,7 +72,6 @@ export default function LedgerPage() {
     );
   }
 
-  // FIX: Corrected implicit return wrapper for filter mapping
   const purchaseLedgers = ledgers.filter((entry) => entry.type === "purchase");
 
   return (
@@ -98,7 +94,6 @@ export default function LedgerPage() {
         {error && <Alert type="error" message={error} />}
         {success && <Alert type="success" message={success} />}
 
-        {/* Better UX: Show internal loading indicator instead of destroying layout */}
         {fetching && ledgers.length === 0 ? (
           <div className="flex justify-center py-12">
             <Spinner />
