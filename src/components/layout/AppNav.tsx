@@ -1,13 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Button, RoleBadge } from "@/components/ui";
 
 export default function AppNav() {
 	const { user, logout } = useAuth();
 	const pathname = usePathname();
+	const router = useRouter();
 
 	const navItems = [
 		{ href: "/dashboard", label: "Dashboard" },
@@ -22,29 +22,36 @@ export default function AppNav() {
 		{ href: `/dashboard/profile`, label: "Profile" },
 	];
 
+	console.log("AppNav rendered - user:", user, "role:", user?.role);
+
 	return (
 		<nav className="bg-white border-b border-gray-200 px-4 sm:px-6">
 			<div className="max-w-7xl mx-auto flex items-center justify-between h-14">
 				{/* Logo */}
-				<Link
-					href="/dashboard"
-					className="font-bold text-violet-700 text-lg tracking-tight">
+				<button
+					type="button"
+					onClick={() => router.push("/dashboard")}
+					className="font-bold text-violet-700 text-lg tracking-tight cursor-pointer hover:opacity-80">
 					AuthApp
-				</Link>
+				</button>
 
 				{/* Nav links */}
 				<div className="hidden sm:flex items-center gap-1">
 					{navItems.map((item) => (
-						<Link
+						<button
+							type="button"
 							key={item.href}
-							href={item.href}
-							className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+							onClick={() => {
+								console.log("Navigating to:", item.href);
+								router.push(item.href);
+							}}
+							className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
 								pathname === item.href
 									? "bg-violet-50 text-violet-700"
 									: "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
 							}`}>
 							{item.label}
-						</Link>
+						</button>
 					))}
 				</div>
 

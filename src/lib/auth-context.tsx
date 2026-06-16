@@ -1,163 +1,172 @@
 "use client";
 
 import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useState,
 } from "react";
 import { useRouter } from "next/navigation";
 import { auth, tokenStorage } from "@/lib/api";
 import { AuthState, LoginPayload, RegisterPayload, User } from "@/types";
 
 interface AuthContextValue extends AuthState {
-  login: (payload: LoginPayload) => Promise<void>;
-  register: (payload: RegisterPayload) => Promise<void>;
-  logout: () => Promise<void>;
-  refreshUser: () => Promise<void>;
+	login: (payload: LoginPayload) => Promise<void>;
+	register: (payload: RegisterPayload) => Promise<void>;
+	logout: () => Promise<void>;
+	refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function setRoleCookie(role: string) {
+	document.cookie = `userRole=${role}; path=/; max-age=900`;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    accessToken: null,
-    isLoading: true,
-    isAuthenticated: false,
-  });
+	const router = useRouter();
+	const [state, setState] = useState<AuthState>({
+		user: null,
+		accessToken: null,
+		isLoading: true,
+		isAuthenticated: false,
+	});
 
-  const refreshUser = useCallback(async () => {
-    try {
-      const token = tokenStorage.getAccess();
-      console.log("token found:", token);
-      if (!token) {
-        setState({
-          user: null,
-          accessToken: null,
-          isLoading: false,
-          isAuthenticated: false,
-        });
-        return;
-      }
-      const res = await auth.getMe();
-      console.log("getMe response:", res);
-      setState({
-        user: res.data?.user ?? null,
-        accessToken: token,
-        isLoading: false,
-        isAuthenticated: true,
-      });
-    } catch (error) {
-      console.log("refreshUser error:", error);
-      tokenStorage.clear();
-      setState({
-        user: null,
-        accessToken: null,
-        isLoading: false,
-        isAuthenticated: false,
-      });
-    }
-  }, []);
+	const refreshUser = useCallback(async () => {
+		try {
+			const token = tokenStorage.getAccess();
+			if (!token) {
+				setState({
+					user: null,
+					accessToken: null,
+					isLoading: false,
+					isAuthenticated: false,
+				});
+				return;
+			}
+			const res = await auth.getMe();
+			const user = res.data?.user ?? null;
 
-  useEffect(() => {
-    void refreshUser();
-  }, [refreshUser]);
+			if (user?.role) setRoleCookie(user.role);
 
-  const login = async (payload: LoginPayload) => {
-    const res = await auth.login(payload);
-    if (!res.success || !res.data?.accessToken || !res.data?.user) {
-      throw new Error(res.message || "Login failed");
-    }
-    tokenStorage.setAccess(res.data.accessToken);
-    tokenStorage.setRefresh(res.data.refreshToken!);
-    setState({
-      user: res.data.user,
-      accessToken: res.data.accessToken,
-      isLoading: false,
-      isAuthenticated: true,
-    });
-  };
+			setState({
+				user,
+				accessToken: token,
+				isLoading: false,
+				isAuthenticated: true,
+			});
+		} catch {
+			tokenStorage.clear();
+			setState({
+				user: null,
+				accessToken: null,
+				isLoading: false,
+				isAuthenticated: false,
+			});
+		}
+	}, []);
 
-  const register = async (payload: RegisterPayload) => {
-    const res = await auth.register(payload);
-    if (!res.success || !res.data?.accessToken || !res.data?.user) {
-      throw new Error(res.message || "Registration failed");
-    }
-    tokenStorage.setAccess(res.data.accessToken);
-    tokenStorage.setRefresh(res.data.refreshToken!);
-    document.cookie = `userRole=${res.data.user.role}; path=/; max-age=900`;
+	useEffect(() => {
+		void refreshUser();
+	}, [refreshUser]);
 
-    setState({
-      user: res.data.user,
-      accessToken: res.data.accessToken,
-      isLoading: false,
-      isAuthenticated: true,
-    });
-    router.push("/dashboard");
-  };
-  const logout = async () => {
-    try {
-      await auth.logout();
-    } finally {
-      tokenStorage.clear();
-      setState({
-        user: null,
-        accessToken: null,
-        isLoading: false,
-        isAuthenticated: false,
-      });
-      router.push("/login");
-    }
-  };
+	const login = async (payload: LoginPayload) => {
+		const res = await auth.login(payload);
+		if (!res.success || !res.data?.accessToken || !res.data?.user) {
+			throw new Error(res.message || "Login failed");
+		}
+		tokenStorage.setAccess(res.data.accessToken);
+		tokenStorage.setRefresh(res.data.refreshToken!);
 
-  return (
-    <AuthContext.Provider
-      value={{ ...state, login, register, logout, refreshUser }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+		setRoleCookie(res.data.user.role);
+
+		setState({
+			user: res.data.user,
+			accessToken: res.data.accessToken,
+			isLoading: false,
+			isAuthenticated: true,
+		});
+	};
+
+	const register = async (payload: RegisterPayload) => {
+		const res = await auth.register(payload);
+		if (!res.success || !res.data?.accessToken || !res.data?.user) {
+			throw new Error(res.message || "Registration failed");
+		}
+		tokenStorage.setAccess(res.data.accessToken);
+		tokenStorage.setRefresh(res.data.refreshToken!);
+		setRoleCookie(res.data.user.role);
+
+		setState({
+			user: res.data.user,
+			accessToken: res.data.accessToken,
+			isLoading: false,
+			isAuthenticated: true,
+		});
+		router.push("/dashboard");
+	};
+
+	const logout = async () => {
+		try {
+			await auth.logout();
+		} finally {
+			tokenStorage.clear();
+
+			document.cookie = "userRole=; path=/; max-age=0";
+			setState({
+				user: null,
+				accessToken: null,
+				isLoading: false,
+				isAuthenticated: false,
+			});
+			router.push("/login");
+		}
+	};
+
+	return (
+		<AuthContext.Provider
+			value={{ ...state, login, register, logout, refreshUser }}>
+			{children}
+		</AuthContext.Provider>
+	);
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
+	const ctx = useContext(AuthContext);
+	if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+	return ctx;
 }
-
-// ─── Role Guards ──────────────────────────────────────────────────────────────
 
 export function useRequireAuth(redirectTo = "/login") {
-  const { isAuthenticated, isLoading, accessToken } = useAuth();
-  const router = useRouter();
+	const { isAuthenticated, isLoading } = useAuth();
+	const router = useRouter();
 
-  useEffect(() => {
-    if (isLoading) return;
+	useEffect(() => {
+		if (isLoading) return;
+		if (!isAuthenticated) {
+			router.replace(`${redirectTo}?redirect=/dashboard`);
+		}
+	}, [isAuthenticated, isLoading, router, redirectTo]);
 
-    // sirf tab redirect karo jab token bhi na ho
-    if (!accessToken) {
-      router.replace(`${redirectTo}?redirect=/dashboard`);
-    }
-  }, [accessToken, isLoading, router, redirectTo]);
-
-  return {
-    isAuthenticated: !!accessToken,
-    isLoading,
-  };
+	return { isAuthenticated, isLoading };
 }
 
-export function useRequireRole(role: "admin" | "moderator") {
-  const { user, isLoading } = useAuth();
-  const router = useRouter();
+export function useRequireRole(
+	role: "admin" | "moderator",
+	allowAdmin = true, // admins can access any role-gated route by default
+) {
+	const { user, isLoading } = useAuth();
+	const router = useRouter();
 
-  useEffect(() => {
-    if (!isLoading && user && user.role !== role && user.role !== "admin") {
-      router.replace("/dashboard");
-    }
-  }, [user, isLoading, router, role]);
+	useEffect(() => {
+		if (isLoading || !user) return;
+		const hasAccess =
+			user.role === role || (allowAdmin && user.role === "admin");
+		if (!hasAccess) {
+			router.replace("/dashboard");
+		}
+	}, [user, isLoading, router, role, allowAdmin]);
 
-  return { user, isLoading };
+	return { user, isLoading };
 }
