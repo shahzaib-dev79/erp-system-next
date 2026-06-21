@@ -72,6 +72,48 @@ async function apiFetch<T>(
 	options: RequestInit = {},
 	withAuth = true,
 ): Promise<T> {
+  console.log("👉 API CALL:", endpoint);
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string>),
+  };
+
+  if (withAuth) {
+    const token = tokenStorage.getAccess();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  // Auto-refresh on 401
+  if (res.status === 401 && withAuth) {
+    const refreshed = await refreshTokens();
+    if (refreshed) {
+      headers["Authorization"] = `Bearer ${tokenStorage.getAccess()}`;
+      const retryRes = await fetch(`${BASE_URL}${endpoint}`, {
+        ...options,
+        headers,
+      });
+      if (!retryRes.ok) {
+        const err = await retryRes.json();
+        throw new Error(err.message || "Request failed");
+      }
+      return retryRes.json();
+    }
+    tokenStorage.clear();
+    window.location.href = "/login";
+    throw new Error("Session expired");
+  }
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Request failed");
+  }
+
+  return res.json();
 	const headers: Record<string, string> = {
 		"Content-Type": "application/json",
 		...(options.headers as Record<string, string>),
