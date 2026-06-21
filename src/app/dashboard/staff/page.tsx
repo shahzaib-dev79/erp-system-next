@@ -26,14 +26,12 @@ export default function StaffPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Success message 2 seconds baad gayab ho jaye
   useEffect(() => {
     if (!success) return;
     const timer = setTimeout(() => setSuccess(""), 2000);
     return () => clearTimeout(timer);
   }, [success]);
 
-  // Sab staff fetch karo
   const fetchStaff = useCallback(async (showLoader = true) => {
     try {
       if (showLoader) setFetching(true);
@@ -54,7 +52,6 @@ export default function StaffPage() {
     return () => window.clearTimeout(timer);
   }, [fetchStaff]);
 
-  // Delete confirm
   const handleDeleteConfirm = async () => {
     if (!deleteId) return;
     try {
@@ -72,7 +69,6 @@ export default function StaffPage() {
     }
   };
 
-  // Status toggle
   const handleStatusToggle = async (id: string, isActive: boolean) => {
     try {
       setError("");
@@ -103,7 +99,6 @@ export default function StaffPage() {
       <AppNav />
 
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-8">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Staff</h1>
@@ -127,7 +122,6 @@ export default function StaffPage() {
         {error && <Alert type="error" message={error} />}
         {success && <Alert type="success" message={success} />}
 
-        {/* Table */}
         <StaffTable
           staffList={staffList}
           onEdit={(staff) => {
@@ -146,7 +140,6 @@ export default function StaffPage() {
         />
       </main>
 
-      {/* Modal */}
       {showModal && (
         <StaffModal
           key={editData?._id ?? "new-staff"}
